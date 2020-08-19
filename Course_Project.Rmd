@@ -1,0 +1,157 @@
+# Practical Machine Learning Course Project
+
+## Background
+
+Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement – a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. In this project, your goal will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. More information is available from the website here: [link to the website](http://web.archive.org/web/20161224072740/http:/groupware.les.inf.puc-rio.br/har)
+
+Six young health participants were asked to perform one set of 10 repetitions of the Unilateral Dumbbell Biceps Curl in five different fashions: exactly according to the specification (Class A), throwing the elbows to the front (Class B), lifting the dumbbell only halfway (Class C), lowering the dumbbell only halfway (Class D) and throwing the hips to the front (Class E).
+
+Class A corresponds to the specified execution of the exercise, while the other 4 classes correspond to common mistakes. Participants were supervised by an experienced weight lifter to make sure the execution complied to the manner they were supposed to simulate. The exercises were performed by six male participants aged between 20-28 years, with little weight lifting experience. We made sure that all participants could easily simulate the mistakes in a safe and controlled manner by using a relatively light dumbbell (1.25kg).
+
+
+Read more: http:/groupware.les.inf.puc-rio.br/har#dataset#ixzz4TjqH0SaY   
+
+
+## Downlaoding and loading the dataset
+
+```{r}
+if(!file.exists('pml-training.csv')){
+download.file('https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv',destfile = './pml-training.csv', method = 'curl')
+}
+
+Pml_Training <- read.csv('pml-training.csv')
+
+if(!file.exists('pml-test.csv')){
+download.file('https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv',destfile = './pml-test.csv', method = 'curl')
+}
+
+Pml_Testing <- read.csv('pml-test.csv')
+
+```
+
+### Exploring the training dataset
+
+```{r}
+names(Pml_Training)
+```
+
+So we have 160 variables, classe being the one which we have to predict.
+
+It would be good to remove those variables which have near zero variance.
+```{r}
+library(caret)
+nzvar <- nearZeroVar(Pml_Training)
+Pml_Training <- Pml_Training[,-nzvar]
+Pml_Testing <- Pml_Testing[,-nzvar]
+
+names(Pml_Training)
+```
+
+So now we have 100 variables.
+
+We still have many variables which contain NA's. We will remove them too.
+
+```{r}
+Pml_Training <- Pml_Training[,colSums(is.na(Pml_Training)) < .05*nrow(Pml_Training)]
+Pml_Testing <- Pml_Testing[,colSums(is.na(Pml_Testing)) < .05*nrow(Pml_Testing)]
+
+```
+So we are now left with 59 variables to predict on.
+
+We still have some variables who can't be used to predict the classe variable.
+
+```{r}
+Pml_Training <- Pml_Training[,-(1:6)]
+Pml_Testing <- Pml_Testing[,-(1:6)]
+```
+
+Now we are left with only 53 variables which can be used as features to predict our outcome variable.
+
+
+Let's try to get a good idea on how much information is given by the independent variables about the dependent variable which is classe in this class. We will use information.gain() from FSelector to get this information.
+
+```{r}
+library(FSelector)
+order(information.gain(classe~., Pml_Training), decreasing = TRUE)
+```
+
+From this we see that roll_belt, pitch_belt, yaw_belt are some of the variable that have high value associated with Classe variable.
+
+Since there are 53 variables, correlation plot will be more easy and useful to interpre than correlation matrix.
+
+```{r}
+library(corrplot)
+corrplot(cor(Pml_Training[,-53]), method = 'square', type = 'upper')
+```
+
+Here, dark shade represents high correlation between two variables. In our plot, we see that there are very few dark squares indicating that there are few correlated variables.
+Hence this is not very useful.
+
+
+## Prediction Models
+
+First we will break our training dataset into two parts, in the ratio of 3:1, where we would use 3/4th of the data to train the model and 1/4th to validate and then finally using to predict
+
+```{r}
+intrain <- createDataPartition(y = Pml_Training$classe, p = 0.75, list = F)
+Training <- Pml_Training[intrain,]
+Validating <- Pml_Training[-intrain,]
+```
+
+We will now apply the following models to our dataset.
+
+### Random Forest
+
+```{r}
+set.seed(69)
+
+RandF <- train(classe~., data = Training, method = 'rf', trControl = trainControl(method = 'cv', number = 5))
+print(RandF$finalModel)
+```
+
+Predicting with Random Forest
+
+```{r}
+predictRandF <- predict(RandF, newdata=Validating)
+confusionMatrix(predictRandF, factor(Validating$classe))
+```
+
+### Classification Trees
+
+```{r}
+set.seed(69)
+
+ClassT <- train(classe~., data = Training, method = 'rpart')
+print(ClassT$finalModel)
+```
+
+Predicting with Classification Trees
+
+```{r}
+predictClassT <- predict(ClassT, newdata = Validating)
+confusionMatrix(predictClassT, factor(Validating$classe))
+```
+
+### Boosting
+
+```{r}
+set.seed(69)
+Boost <- train(classe~., data = Training, method = 'gbm', verbose = FALSE, trControl = trainControl(method = 'repeatedcv', number = 5))
+print(Boost$finalModel)
+```
+
+Predicting with Boosting
+
+```{r}
+predictBoost <- predict(Boost, newdata = Validating)
+confusionMatrix(predictBoost, factor(Validating$classe))
+```
+
+So we compare the accuracy of the three model, it is clear that Random Forest has the highest accuracy. So we will use it for our test set.
+
+```{r}
+predict_final <- predict(RandF, newdata = Pml_Testing)
+predict_final
+```
+
+  
