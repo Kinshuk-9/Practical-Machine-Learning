@@ -116,6 +116,8 @@ predictRandF <- predict(RandF, newdata=Validating)
 confusionMatrix(predictRandF, factor(Validating$classe))
 ```
 
+Out of sample error rate is equal to 0.0061 which is quite small.
+
 ### Classification Trees
 
 ```{r}
@@ -132,6 +134,8 @@ predictClassT <- predict(ClassT, newdata = Validating)
 confusionMatrix(predictClassT, factor(Validating$classe))
 ```
 
+Out of sample error rate is .51 which is quite high.
+
 ### Boosting
 
 ```{r}
@@ -146,6 +150,8 @@ Predicting with Boosting
 predictBoost <- predict(Boost, newdata = Validating)
 confusionMatrix(predictBoost, factor(Validating$classe))
 ```
+
+Out of sample error rate is .0389 which is again quite small.
 
 So we compare the accuracy of the three model, it is clear that Random Forest has the highest accuracy. So we will use it for our test set.
 
