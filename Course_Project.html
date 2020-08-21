@@ -560,7 +560,8 @@ order(information.gain(classe~., Pml_Training), decreasing = TRUE)</code></pre>
 <pre class="r"><code>intrain &lt;- createDataPartition(y = Pml_Training$classe, p = 0.75, list = F)
 Training &lt;- Pml_Training[intrain,]
 Validating &lt;- Pml_Training[-intrain,]</code></pre>
-<p>We will now apply the following models to our dataset.</p>
+<p>We will now apply the following models to our dataset. 1.) Random Forest 2.) Classification Trees 3.) Generalized Boosted Model</p>
+<p>A Confusion Matrix is used at the end of each analysis to better visualize the accuracy of the models.</p>
 <div id="random-forest" class="section level3">
 <h3>Random Forest</h3>
 <pre class="r"><code>set.seed(69)
@@ -572,16 +573,16 @@ print(RandF$finalModel)</code></pre>
 ##  randomForest(x = x, y = y, mtry = param$mtry) 
 ##                Type of random forest: classification
 ##                      Number of trees: 500
-## No. of variables tried at each split: 27
+## No. of variables tried at each split: 2
 ## 
-##         OOB estimate of  error rate: 0.63%
+##         OOB estimate of  error rate: 0.72%
 ## Confusion matrix:
-##      A    B    C    D    E class.error
-## A 4180    3    1    0    1 0.001194743
-## B   20 2821    7    0    0 0.009480337
-## C    0   11 2548    8    0 0.007401636
-## D    0    0   26 2384    2 0.011608624
-## E    0    2    4    7 2693 0.004804139</code></pre>
+##      A    B    C    D    E  class.error
+## A 4184    1    0    0    0 0.0002389486
+## B   17 2822    9    0    0 0.0091292135
+## C    0   20 2545    2    0 0.0085703155
+## D    0    0   45 2365    2 0.0194859038
+## E    0    0    2    8 2696 0.0036954915</code></pre>
 <p>Predicting with Random Forest</p>
 <pre class="r"><code>predictRandF &lt;- predict(RandF, newdata=Validating)
 confusionMatrix(predictRandF, factor(Validating$classe))</code></pre>
@@ -589,35 +590,37 @@ confusionMatrix(predictRandF, factor(Validating$classe))</code></pre>
 ## 
 ##           Reference
 ## Prediction    A    B    C    D    E
-##          A 1394    5    0    0    0
-##          B    1  939    4    0    1
-##          C    0    5  848   10    2
-##          D    0    0    3  794    1
-##          E    0    0    0    0  897
+##          A 1393    3    0    0    0
+##          B    2  943   10    0    0
+##          C    0    3  844   18    4
+##          D    0    0    1  786    1
+##          E    0    0    0    0  896
 ## 
 ## Overall Statistics
 ##                                           
-##                Accuracy : 0.9935          
-##                  95% CI : (0.9908, 0.9955)
+##                Accuracy : 0.9914          
+##                  95% CI : (0.9884, 0.9938)
 ##     No Information Rate : 0.2845          
 ##     P-Value [Acc &gt; NIR] : &lt; 2.2e-16       
 ##                                           
-##                   Kappa : 0.9917          
+##                   Kappa : 0.9892          
 ##                                           
 ##  Mcnemar&#39;s Test P-Value : NA              
 ## 
 ## Statistics by Class:
 ## 
 ##                      Class: A Class: B Class: C Class: D Class: E
-## Sensitivity            0.9993   0.9895   0.9918   0.9876   0.9956
-## Specificity            0.9986   0.9985   0.9958   0.9990   1.0000
-## Pos Pred Value         0.9964   0.9937   0.9803   0.9950   1.0000
-## Neg Pred Value         0.9997   0.9975   0.9983   0.9976   0.9990
+## Sensitivity            0.9986   0.9937   0.9871   0.9776   0.9945
+## Specificity            0.9991   0.9970   0.9938   0.9995   1.0000
+## Pos Pred Value         0.9979   0.9874   0.9712   0.9975   1.0000
+## Neg Pred Value         0.9994   0.9985   0.9973   0.9956   0.9988
 ## Prevalence             0.2845   0.1935   0.1743   0.1639   0.1837
-## Detection Rate         0.2843   0.1915   0.1729   0.1619   0.1829
-## Detection Prevalence   0.2853   0.1927   0.1764   0.1627   0.1829
-## Balanced Accuracy      0.9989   0.9940   0.9938   0.9933   0.9978</code></pre>
-<p>Out of sample error rate is equal to 0.0061 which is quite small.</p>
+## Detection Rate         0.2841   0.1923   0.1721   0.1603   0.1827
+## Detection Prevalence   0.2847   0.1947   0.1772   0.1607   0.1827
+## Balanced Accuracy      0.9989   0.9953   0.9905   0.9886   0.9972</code></pre>
+<div id="accuracy-is-.99-which-gives-our-out-of-sample-error-rate-equal-to-0.01." class="section level4">
+<h4>Accuracy is .99 which gives our Out of sample error rate equal to 0.01.</h4>
+</div>
 </div>
 <div id="classification-trees" class="section level3">
 <h3>Classification Trees</h3>
@@ -631,14 +634,14 @@ print(ClassT$finalModel)</code></pre>
 ##       * denotes terminal node
 ## 
 ##  1) root 14718 10533 A (0.28 0.19 0.17 0.16 0.18)  
-##    2) roll_belt&lt; 130.5 13485  9311 A (0.31 0.21 0.19 0.18 0.11)  
-##      4) pitch_forearm&lt; -33.95 1171     7 A (0.99 0.006 0 0 0) *
-##      5) pitch_forearm&gt;=-33.95 12314  9304 A (0.24 0.23 0.21 0.2 0.12)  
-##       10) magnet_dumbbell_y&lt; 432.5 10346  7414 A (0.28 0.18 0.24 0.19 0.11)  
-##         20) roll_forearm&lt; 122.5 6455  3823 A (0.41 0.18 0.18 0.17 0.06) *
-##         21) roll_forearm&gt;=122.5 3891  2592 C (0.077 0.18 0.33 0.23 0.18) *
-##       11) magnet_dumbbell_y&gt;=432.5 1968   998 B (0.04 0.49 0.043 0.23 0.19) *
-##    3) roll_belt&gt;=130.5 1233    11 E (0.0089 0 0 0 0.99) *</code></pre>
+##    2) roll_belt&lt; 130.5 13471  9297 A (0.31 0.21 0.19 0.18 0.11)  
+##      4) pitch_forearm&lt; -34.35 1187     5 A (1 0.0042 0 0 0) *
+##      5) pitch_forearm&gt;=-34.35 12284  9292 A (0.24 0.23 0.21 0.2 0.12)  
+##       10) magnet_dumbbell_y&lt; 439.5 10400  7471 A (0.28 0.18 0.24 0.19 0.11)  
+##         20) roll_forearm&lt; 122.5 6472  3849 A (0.41 0.18 0.19 0.16 0.062) *
+##         21) roll_forearm&gt;=122.5 3928  2651 C (0.078 0.18 0.33 0.23 0.18) *
+##       11) magnet_dumbbell_y&gt;=439.5 1884   916 B (0.033 0.51 0.042 0.23 0.19) *
+##    3) roll_belt&gt;=130.5 1247    11 E (0.0088 0 0 0 0.99) *</code></pre>
 <p>Predicting with Classification Trees</p>
 <pre class="r"><code>predictClassT &lt;- predict(ClassT, newdata = Validating)
 confusionMatrix(predictClassT, factor(Validating$classe))</code></pre>
@@ -646,35 +649,37 @@ confusionMatrix(predictClassT, factor(Validating$classe))</code></pre>
 ## 
 ##           Reference
 ## Prediction    A    B    C    D    E
-##          A 1259  347  398  350  127
-##          B   29  350   30  147  119
-##          C  104  252  427  307  246
+##          A 1267  382  376  370  125
+##          B   18  318   28  144  137
+##          C  107  249  451  290  244
 ##          D    0    0    0    0    0
-##          E    3    0    0    0  409
+##          E    3    0    0    0  395
 ## 
 ## Overall Statistics
 ##                                           
-##                Accuracy : 0.4986          
-##                  95% CI : (0.4845, 0.5127)
+##                Accuracy : 0.4957          
+##                  95% CI : (0.4816, 0.5098)
 ##     No Information Rate : 0.2845          
 ##     P-Value [Acc &gt; NIR] : &lt; 2.2e-16       
 ##                                           
-##                   Kappa : 0.3458          
+##                   Kappa : 0.3415          
 ##                                           
 ##  Mcnemar&#39;s Test P-Value : NA              
 ## 
 ## Statistics by Class:
 ## 
 ##                      Class: A Class: B Class: C Class: D Class: E
-## Sensitivity            0.9025  0.36881  0.49942   0.0000  0.45394
-## Specificity            0.6518  0.91783  0.77550   1.0000  0.99925
-## Pos Pred Value         0.5075  0.51852  0.31961      NaN  0.99272
-## Neg Pred Value         0.9439  0.85836  0.88004   0.8361  0.89047
+## Sensitivity            0.9082  0.33509  0.52749   0.0000  0.43840
+## Specificity            0.6429  0.91732  0.78019   1.0000  0.99925
+## Pos Pred Value         0.5028  0.49302  0.33632      NaN  0.99246
+## Neg Pred Value         0.9463  0.85184  0.88661   0.8361  0.88771
 ## Prevalence             0.2845  0.19352  0.17435   0.1639  0.18373
-## Detection Rate         0.2567  0.07137  0.08707   0.0000  0.08340
-## Detection Prevalence   0.5059  0.13764  0.27243   0.0000  0.08401
-## Balanced Accuracy      0.7771  0.64332  0.63746   0.5000  0.72660</code></pre>
-<p>Out of sample error rate is .51 which is quite high.</p>
+## Detection Rate         0.2584  0.06485  0.09197   0.0000  0.08055
+## Detection Prevalence   0.5139  0.13153  0.27345   0.0000  0.08116
+## Balanced Accuracy      0.7756  0.62620  0.65384   0.5000  0.71883</code></pre>
+<div id="accuracy-is-.49-which-gives-our-out-of-sample-error-rate-is-.51-which-is-quite-high." class="section level4">
+<h4>Accuracy is .49 which gives our out of sample error rate is .51 which is quite high.</h4>
+</div>
 </div>
 <div id="boosting" class="section level3">
 <h3>Boosting</h3>
@@ -691,40 +696,42 @@ confusionMatrix(predictBoost, factor(Validating$classe))</code></pre>
 ## 
 ##           Reference
 ## Prediction    A    B    C    D    E
-##          A 1373   25    0    3    0
-##          B   15  899   25    6   16
-##          C    3   22  811   30    8
-##          D    2    3   14  764    9
-##          E    2    0    5    1  868
+##          A 1369   31    0    1    0
+##          B   17  892   29    3   11
+##          C    6   25  819   39   11
+##          D    2    1    7  756   10
+##          E    1    0    0    5  869
 ## 
 ## Overall Statistics
 ##                                           
-##                Accuracy : 0.9615          
-##                  95% CI : (0.9557, 0.9667)
+##                Accuracy : 0.9594          
+##                  95% CI : (0.9535, 0.9648)
 ##     No Information Rate : 0.2845          
 ##     P-Value [Acc &gt; NIR] : &lt; 2.2e-16       
 ##                                           
-##                   Kappa : 0.9512          
+##                   Kappa : 0.9487          
 ##                                           
-##  Mcnemar&#39;s Test P-Value : 4.108e-05       
+##  Mcnemar&#39;s Test P-Value : 6.547e-09       
 ## 
 ## Statistics by Class:
 ## 
 ##                      Class: A Class: B Class: C Class: D Class: E
-## Sensitivity            0.9842   0.9473   0.9485   0.9502   0.9634
-## Specificity            0.9920   0.9843   0.9844   0.9932   0.9980
-## Pos Pred Value         0.9800   0.9355   0.9279   0.9646   0.9909
-## Neg Pred Value         0.9937   0.9873   0.9891   0.9903   0.9918
+## Sensitivity            0.9814   0.9399   0.9579   0.9403   0.9645
+## Specificity            0.9909   0.9848   0.9800   0.9951   0.9985
+## Pos Pred Value         0.9772   0.9370   0.9100   0.9742   0.9931
+## Neg Pred Value         0.9926   0.9856   0.9910   0.9884   0.9921
 ## Prevalence             0.2845   0.1935   0.1743   0.1639   0.1837
-## Detection Rate         0.2800   0.1833   0.1654   0.1558   0.1770
-## Detection Prevalence   0.2857   0.1960   0.1782   0.1615   0.1786
-## Balanced Accuracy      0.9881   0.9658   0.9665   0.9717   0.9807</code></pre>
-<p>Out of sample error rate is .0389 which is again quite small.</p>
+## Detection Rate         0.2792   0.1819   0.1670   0.1542   0.1772
+## Detection Prevalence   0.2857   0.1941   0.1835   0.1582   0.1784
+## Balanced Accuracy      0.9861   0.9624   0.9689   0.9677   0.9815</code></pre>
+<div id="accuracy-is-.96-which-gives-our-out-of-sample-error-rate-is-.04-which-is-again-quite-small." class="section level4">
+<h4>Accuracy is .96 which gives our out of sample error rate is .04 which is again quite small.</h4>
 <p>So we compare the accuracy of the three model, it is clear that Random Forest has the highest accuracy. So we will use it for our test set.</p>
 <pre class="r"><code>predict_final &lt;- predict(RandF, newdata = Pml_Testing)
 predict_final</code></pre>
 <pre><code>##  [1] B A B A A E D B A A B C B A E E A B B B
 ## Levels: A B C D E</code></pre>
+</div>
 </div>
 </div>
 </div>

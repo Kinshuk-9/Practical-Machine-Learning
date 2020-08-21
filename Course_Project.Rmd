@@ -99,6 +99,11 @@ Validating <- Pml_Training[-intrain,]
 ```
 
 We will now apply the following models to our dataset.
+1.) Random Forest
+2.) Classification Trees
+3.) Generalized Boosted Model
+
+A Confusion Matrix is used at the end of each analysis to better visualize the accuracy of the models.
 
 ### Random Forest
 
@@ -116,7 +121,7 @@ predictRandF <- predict(RandF, newdata=Validating)
 confusionMatrix(predictRandF, factor(Validating$classe))
 ```
 
-Out of sample error rate is equal to 0.0061 which is quite small.
+#### Accuracy is .99 which gives our Out of sample error rate equal to 0.01.
 
 ### Classification Trees
 
@@ -134,7 +139,7 @@ predictClassT <- predict(ClassT, newdata = Validating)
 confusionMatrix(predictClassT, factor(Validating$classe))
 ```
 
-Out of sample error rate is .51 which is quite high.
+#### Accuracy is .49 which gives our out of sample error rate is .51 which is quite high.
 
 ### Boosting
 
@@ -151,7 +156,7 @@ predictBoost <- predict(Boost, newdata = Validating)
 confusionMatrix(predictBoost, factor(Validating$classe))
 ```
 
-Out of sample error rate is .0389 which is again quite small.
+#### Accuracy is .96 which gives our out of sample error rate is .04 which is again quite small.
 
 So we compare the accuracy of the three model, it is clear that Random Forest has the highest accuracy. So we will use it for our test set.
 
